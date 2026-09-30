@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block contenido %}
+<h2>{{ titulo }} — detalle</h2>
+<table class="table col-md-6">{% for nombre, valor in filas %}<tr><th>{{ nombre|capfirst }}</th><td>{{ valor }}</td></tr>{% endfor %}</table>
+<a class="btn btn-warning" href="{% url slug|add:'_editar' object.pk %}">Editar</a>
+<a class="btn btn-secondary" href="{% url slug|add:'_lista' %}">Volver</a>
+{% endblock %}

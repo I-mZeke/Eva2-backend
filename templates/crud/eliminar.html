@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block contenido %}
+<h2>Eliminar {{ titulo }}</h2>
+<p>¿Seguro que deseas eliminar <b>{{ object }}</b>?</p>
+<form method="post">{% csrf_token %}<button class="btn btn-danger">Sí, eliminar</button>
+<a class="btn btn-secondary" href="{% url slug|add:'_lista' %}">Cancelar</a></form>
+{% endblock %}

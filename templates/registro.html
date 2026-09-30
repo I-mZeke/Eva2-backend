@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block contenido %}
+<style>
+  .errorlist { display: none; }  /* oculta los errores sueltos; se muestran arriba en rojo */
+</style>
+
+<h2>Crear cuenta de pasajero</h2>
+
+<form method="post" class="col-md-5" novalidate>{% csrf_token %}
+  {% if form.errors %}
+  <div class="alert alert-danger">
+    <b>No se pudo crear la cuenta:</b>
+    <ul class="mb-0 mt-1">
+      {% for campo in form %}
+        {% for error in campo.errors %}<li>{{ campo.label }}: {{ error }}</li>{% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {{ form.as_p }}
+  <button class="btn btn-primary">Registrarme</button>
+</form>
+{% endblock %}

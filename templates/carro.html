@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block contenido %}
+<h2>Mi carro de pasajes</h2>
+{% if items %}
+<table class="table">
+  <tr><th>Servicio</th><th>Asiento</th><th>Pasajero</th><th>Documento</th><th>Precio</th><th></th></tr>
+  {% for i in items %}
+  <tr><td>{{ i.servicio_asiento.servicio }}</td>
+    <td>{{ i.servicio_asiento.asiento.numero }} ({{ i.servicio_asiento.asiento.get_tipo_display }})</td>
+    <td>{{ i.pasajero.nombre }}</td><td>{{ i.pasajero.documento }}</td><td>${{ i.precio }}</td>
+    <td><form method="post" action="{% url 'carro_quitar' i.pk %}">{% csrf_token %}<button class="btn btn-sm btn-danger">Quitar</button></form></td></tr>
+  {% endfor %}
+</table>
+<h4>Total: ${{ total }}</h4>
+<form method="post" action="{% url 'carro_checkout' %}">{% csrf_token %}<button class="btn btn-success">Confirmar compra (checkout)</button></form>
+{% else %}<p>Tu carro está vacío.</p>{% endif %}
+{% endblock %}

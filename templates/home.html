@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block contenido %}
+<h1>Buscar pasajes</h1>
+<form method="get" class="row g-2 mb-4">
+  <div class="col-md-3"><input class="form-control" name="origen" placeholder="Origen" value="{{ request.GET.origen }}"></div>
+  <div class="col-md-3"><input class="form-control" name="destino" placeholder="Destino" value="{{ request.GET.destino }}"></div>
+  <div class="col-md-3"><input type="date" class="form-control" name="fecha" value="{{ request.GET.fecha }}"></div>
+  <div class="col-md-3"><button class="btn btn-primary w-100">Buscar</button></div>
+</form>
+<table class="table table-striped">
+  <tr><th>Ruta</th><th>Salida</th><th>Bus</th><th>Tarifas</th><th></th></tr>
+  {% for s in servicios %}
+  <tr><td>{{ s.ruta }}</td><td>{{ s.fecha_salida|date:"d/m/Y H:i" }}</td><td>{{ s.bus }}</td>
+    <td>{% for t in s.tarifas.all %}{{ t.get_tipo_asiento_display }}: ${{ t.precio }}<br>{% endfor %}</td>
+    <td><a class="btn btn-sm btn-success" href="{% url 'servicio_publico' s.pk %}">Ver asientos</a></td></tr>
+  {% empty %}<tr><td colspan="5">No hay servicios para tu búsqueda.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

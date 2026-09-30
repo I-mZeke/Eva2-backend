@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block contenido %}
+<h2>{% if es_admin %}Todas las ventas{% else %}Mis ventas{% endif %}</h2>
+{% for v in ventas %}
+<div class="card mb-3"><div class="card-header d-flex justify-content-between">
+  <span>Venta #{{ v.pk }} — {{ v.usuario }} — <b>{{ v.get_estado_display }}</b> — Total ${{ v.total }}</span>
+  <span class="d-flex gap-1">
+    {% if v.estado == 'PENDIENTE' %}
+      <form method="post" action="{% url 'venta_estado' v.pk 'PAGADO' %}">{% csrf_token %}<button class="btn btn-sm btn-success">Pagar</button></form>
+    {% endif %}
+    {% if es_admin %}
+      {% if v.estado == 'PAGADO' %}<form method="post" action="{% url 'venta_estado' v.pk 'ENTREGADO' %}">{% csrf_token %}<button class="btn btn-sm btn-primary">Entregado</button></form>{% endif %}
+      {% if v.estado == 'PENDIENTE' or v.estado == 'PAGADO' %}<form method="post" action="{% url 'venta_estado' v.pk 'CANCELADO' %}">{% csrf_token %}<button class="btn btn-sm btn-danger">Cancelar</button></form>{% endif %}
+    {% endif %}
+  </span></div>
+  <ul class="list-group list-group-flush">
+    {% for d in v.detalles.all %}<li class="list-group-item">{{ d.servicio_asiento.servicio }} · asiento {{ d.servicio_asiento.asiento.numero }} · {{ d.pasajero }} · ${{ d.precio_unitario }}</li>{% endfor %}
+  </ul></div>
+{% empty %}<p>No hay ventas.</p>{% endfor %}
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block contenido %}
+<style>
+  .bus-card{background:#f2f2f2;border-radius:16px;padding:20px}
+  .bus-mapa{background:#fff;border:1px solid #ddd;border-radius:24px;padding:24px 24px 24px 70px;overflow-x:auto}
+  .bus-grid{display:grid;grid-template-rows:repeat(5,38px);grid-auto-columns:38px;gap:8px 12px;
+            grid-template-rows:38px 38px 22px 38px 38px}
+  .asiento{border:2px solid #4b7a1a;background:#b6f04a;border-radius:8px;font-size:.75rem;font-weight:700;
+           width:34px;height:34px;padding:0;cursor:pointer}
+  .asiento.cama{background:#8fe0f0;border-color:#1f7a8c}
+  .asiento.sel{background:#1b2a4a;border-color:#1b2a4a;color:#fff}
+  .asiento.ocupado{background:#e2e2e2;border-color:#bbb;color:#999;cursor:not-allowed}
+  .punto{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:4px;vertical-align:middle}
+  #btn-continuar{min-width:220px}
+</style>
+
+<!-- Cabecera del servicio -->
+<div class="card shadow-sm mb-3"><div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
+  <div>
+    <div><b>Salida</b> &nbsp; {{ servicio.fecha_salida|date:"D, d/m · H:i" }}</div>
+    <div class="text-muted">Llegada &nbsp; {{ servicio.fecha_llegada|date:"D, d/m · H:i" }}</div>
+  </div>
+  <div class="text-center"><b>{{ servicio.ruta }}</b><br><small class="text-muted">Bus {{ servicio.bus.patente }} · {{ servicio.ruta.duracion_minutos }} min</small></div>
+  <div class="text-center"><small>Desde</small><br><b>${{ desde }}</b></div>
+</div></div>
+
+<div class="bus-card">
+  <div class="row g-3 mb-3">
+    <div class="col-md-6"><label class="small text-muted">Punto de embarque</label>
+      <input class="form-control" disabled value="{{ servicio.ruta.origen }}"></div>
+    <div class="col-md-6"><label class="small text-muted">Punto de llegada</label>
+      <input class="form-control" disabled value="{{ servicio.ruta.destino }}"></div>
+  </div>
+
+  <div class="text-end mb-2 small">
+    <span class="punto" style="background:#b6f04a;border:1px solid #4b7a1a"></span>Disponible (semicama)
+    <span class="punto ms-2" style="background:#8fe0f0;border:1px solid #1f7a8c"></span>Disponible (cama)
+    <span class="punto ms-2" style="background:#1b2a4a"></span>Seleccionado
+    <span class="punto ms-2" style="background:#e2e2e2;border:1px solid #bbb"></span>Reservado
+  </div>
+
+  <div class="bus-mapa">
+    <div class="bus-grid">
+      {% for a in asientos %}
+      <button type="button" class="asiento {% if a.asiento.tipo == 'CAMA' %}cama{% endif %} {% if a.estado != 'DISPONIBLE' %}ocupado{% endif %}"
+              style="grid-column:{{ a.col }};grid-row:{{ a.fila }}"
+              data-id="{{ a.pk }}" data-num="{{ a.asiento.numero }}" data-precio="{{ a.precio|default:0 }}"
+              title="{{ a.asiento.get_tipo_display }} · ${{ a.precio }}"
+              {% if a.estado != 'DISPONIBLE' %}disabled{% endif %}>{{ a.asiento.numero }}</button>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if user.is_authenticated %}
+  <form method="post" action="{% url 'carro_agregar_varios' %}" id="form-asientos">{% csrf_token %}
+    <!-- Aquí el JS agrega los datos del pasajero de cada asiento seleccionado -->
+    <div id="pasajeros" class="mt-3"></div>
+    <div class="d-flex justify-content-between align-items-center mt-3">
+      <span>N° asientos seleccionados: <b id="cant">0</b></span>
+      <button class="btn btn-secondary btn-lg" id="btn-continuar" disabled>Continuar: $<span id="total">0</span></button>
+    </div>
+  </form>
+  {% else %}
+  <div class="alert alert-info mt-3 mb-0">
+    <a href="{% url 'login' %}">Ingresa</a> o <a href="{% url 'registro' %}">regístrate</a> para comprar.
+  </div>
+  {% endif %}
+</div>
+
+<script>
+  const sel = new Map();   // id -> {num, precio}
+  const cont = document.getElementById('pasajeros');
+  document.querySelectorAll('.asiento:not(.ocupado)').forEach(b => b.addEventListener('click', () => {
+    if (!cont) return;
+    const id = b.dataset.id;
+    if (sel.has(id)) { sel.delete(id); b.classList.remove('sel'); }
+    else { sel.set(id, {num: b.dataset.num, precio: +b.dataset.precio}); b.classList.add('sel'); }
+    dibujar();
+  }));
+
+  function dibujar() {
+    // Guarda lo escrito para no perderlo al agregar/quitar otro asiento
+    const previos = {};
+    cont.querySelectorAll('input[type=text]').forEach(i => previos[i.name] = i.value);
+    cont.innerHTML = '';
+    let total = 0;
+    sel.forEach((v, id) => {
+      total += v.precio;
+      cont.insertAdjacentHTML('beforeend', `
+        <input type="hidden" name="asientos" value="${id}">
+        <div class="row g-2 mb-2 align-items-center">
+          <div class="col-md-2"><b>Asiento ${v.num}</b> · $${v.precio}</div>
+          <div class="col-md-5"><input type="text" class="form-control" name="nombre_${id}" placeholder="Nombre completo" required value="${previos['nombre_'+id]||''}"></div>
+          <div class="col-md-5"><input type="text" class="form-control" name="documento_${id}" placeholder="RUT / Pasaporte" required value="${previos['documento_'+id]||''}"></div>
+        </div>`);
+    });
+    document.getElementById('cant').textContent = sel.size;
+    document.getElementById('total').textContent = total;
+    const btn = document.getElementById('btn-continuar');
+    btn.disabled = sel.size === 0;
+    btn.className = 'btn btn-lg ' + (sel.size ? 'btn-success' : 'btn-secondary');
+  }
+</script>
+{% endblock %}

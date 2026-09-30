@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block contenido %}
+<div class="d-flex justify-content-between mb-3"><h2>{{ titulo }}</h2>
+  <a class="btn btn-primary" href="{% url slug|add:'_crear' %}">+ Nuevo</a></div>
+<table class="table table-striped">
+  <tr>{% for e in encabezados %}<th>{{ e|capfirst }}</th>{% endfor %}<th></th></tr>
+  {% for obj, valores in filas %}
+  <tr>{% for v in valores %}<td>{{ v }}</td>{% endfor %}
+    <td class="text-end">
+      <a class="btn btn-sm btn-info" href="{% url slug|add:'_detalle' obj.pk %}">Ver</a>
+      <a class="btn btn-sm btn-warning" href="{% url slug|add:'_editar' obj.pk %}">Editar</a>
+      <a class="btn btn-sm btn-danger" href="{% url slug|add:'_eliminar' obj.pk %}">Eliminar</a></td></tr>
+  {% empty %}<tr><td colspan="{{ encabezados|length|add:1 }}">Sin registros.</td></tr>{% endfor %}
+</table>
+{% if is_paginated %}
+  {% if page_obj.has_previous %}<a class="btn btn-outline-primary" href="?page={{ page_obj.previous_page_number }}">« Anterior</a>{% endif %}
+  Página {{ page_obj.number }} de {{ paginator.num_pages }}
+  {% if page_obj.has_next %}<a class="btn btn-outline-primary" href="?page={{ page_obj.next_page_number }}">Siguiente »</a>{% endif %}
+{% endif %}
+<a class="d-block mt-3" href="{% url 'panel' %}">← Volver al panel</a>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block contenido %}
+<h2>Mis boletos</h2>
+{% for b in boletos %}
+<div class="card mb-2"><div class="card-body">
+  <h5>{{ b.detalle.servicio_asiento.servicio }}</h5>
+  Asiento {{ b.detalle.servicio_asiento.asiento.numero }} · {{ b.detalle.pasajero }}<br>
+  <small class="text-muted">Código: {{ b.codigo }}</small></div></div>
+{% empty %}<p>Aún no tienes boletos (se emiten al pagar).</p>{% endfor %}
+{% endblock %}

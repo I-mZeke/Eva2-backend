@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block contenido %}
+<h2>Panel del Administrador de Flota</h2>
+<div class="list-group col-md-4">
+  <a class="list-group-item" href="{% url 'ciudad_lista' %}">Ciudades</a>
+  <a class="list-group-item" href="{% url 'terminal_lista' %}">Terminales</a>
+  <a class="list-group-item" href="{% url 'ruta_lista' %}">Rutas</a>
+  <a class="list-group-item" href="{% url 'bus_lista' %}">Buses</a>
+  <a class="list-group-item" href="{% url 'asiento_lista' %}">Asientos</a>
+  <a class="list-group-item" href="{% url 'servicio_lista' %}">Servicios</a>
+  <a class="list-group-item" href="{% url 'tarifa_lista' %}">Tarifas</a>
+  <a class="list-group-item" href="{% url 'servasiento_lista' %}">Asientos por servicio</a>
+  <a class="list-group-item" href="{% url 'pasajero_lista' %}">Pasajeros</a>
+  <a class="list-group-item" href="{% url 'perfil_lista' %}">Perfiles y roles</a>
+  <a class="list-group-item" href="{% url 'ventas' %}">Gestión de ventas</a>
+</div>
+{% endblock %}
